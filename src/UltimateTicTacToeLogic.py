@@ -46,6 +46,8 @@ class GameState:
         st.playerJustMoved = self.playerJustMoved
         st.previousMove = self.previousMove
         st.board = deepcopy(self.board)
+        st.won = deepcopy(self.won)
+        st.winner = self.winner
         return st
 
     def DoMove(self, move):
