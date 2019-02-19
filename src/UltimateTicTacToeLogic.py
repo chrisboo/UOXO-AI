@@ -26,17 +26,17 @@ class GameState:
 
     def __init__(self):
         self.playerJustMoved = 2  # At the root pretend the player just moved is player 2 - player 1 has the first move
-        self.previousMove = -1
-        self.board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-        self.won = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.activeBoard = -1
+        self.pieces = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                       [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+        self.winnerOfBoard = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.winner = 0
 
     def Clone(self):
@@ -44,9 +44,9 @@ class GameState:
         """
         st = GameState()
         st.playerJustMoved = self.playerJustMoved
-        st.previousMove = self.previousMove
-        st.board = deepcopy(self.board)
-        st.won = deepcopy(self.won)
+        st.activeBoard = self.activeBoard
+        st.pieces = deepcopy(self.pieces)
+        st.winnerOfBoard = deepcopy(self.winnerOfBoard)
         st.winner = self.winner
         return st
 
@@ -55,18 +55,18 @@ class GameState:
             Must update playerJustMoved.
         """
         self.playerJustMoved = 3 - self.playerJustMoved
-        self.board[board(move)][cell(move)] = self.playerJustMoved
-        self.previousMove = cell(move)
+        self.pieces[board(move)][cell(move)] = self.playerJustMoved
+        self.activeBoard = cell(move)
 
         maybe = False
-        if Winner(self.board[board(move)]) == self.playerJustMoved:
-            self.won[board(move)] = self.playerJustMoved
+        if Winner(self.pieces[board(move)]) == self.playerJustMoved:
+            self.winnerOfBoard[board(move)] = self.playerJustMoved
             maybe = True
 
         if maybe:
             for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
-                if (self.won[x] == self.won[y] == self.won[z]) and (self.won[z] != 0):
-                    self.winner = self.won[z]
+                if (self.winnerOfBoard[x] == self.winnerOfBoard[y] == self.winnerOfBoard[z]) and (self.winnerOfBoard[z] != 0):
+                    self.winner = self.winnerOfBoard[z]
 
     def GetMoves(self):
         """ Get all possible moves from this state.
@@ -75,21 +75,21 @@ class GameState:
         if self.winner != 0:
             return []
 
-        if self.previousMove != -1 and self.won[cell(self.previousMove)] == 0:
-            return [toMove(self.previousMove, i) for i in range(9) if self.board[cell(self.previousMove)][i] == 0]
+        if self.activeBoard != -1 and self.winnerOfBoard[cell(self.activeBoard)] == 0:
+            return [toMove(self.activeBoard, i) for i in range(9) if self.pieces[cell(self.activeBoard)][i] == 0]
         else:
             moves = []
             for i in range(9):
-                if self.won[i] == 0:
-                    moves.extend([toMove(i, j) for j in range(9) if self.board[i][j] == 0])
+                if self.winnerOfBoard[i] == 0:
+                    moves.extend([toMove(i, j) for j in range(9) if self.pieces[i][j] == 0])
             return moves
 
     def GetResult(self, playerjm):
         """ Get the game result from the viewpoint of playerjm.
         """
         for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
-            if self.won[x] == self.won[y] == self.won[z]:
-                if self.won[x] == playerjm:
+            if self.winnerOfBoard[x] == self.winnerOfBoard[y] == self.winnerOfBoard[z]:
+                if self.winnerOfBoard[x] == playerjm:
                     return 1.0
                 else:
                     return 0.0
@@ -112,7 +112,7 @@ class GameState:
         for row in range(9):
             for i in range(3):
                 for j in range(3):
-                    n_board[row][i * 3 + j] = self.board[3 * (row // 3) + i][3 * (row % 3) + j]
+                    n_board[row][i * 3 + j] = self.pieces[3 * (row // 3) + i][3 * (row % 3) + j]
 
         s = ""
         for i in range(9):
