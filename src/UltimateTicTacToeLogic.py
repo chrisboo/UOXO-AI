@@ -55,21 +55,24 @@ class GameState:
         self.board[board(move)][cell(move)] = self.playerJustMoved
         self.previousMove = cell(move)
 
+        if Winner(self.board[board(move)]) == self.playerJustMoved:
+            self.won[board(move)] = self.playerJustMoved
+
     def GetMoves(self):
         """ Get all possible moves from this state.
         """
         # No moves when someone wins
         for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
-            if (Winner(self.board[x]) == Winner(self.board[y]) == Winner(self.board[z])) and (
-                    Winner(self.board[z]) != 0):
+            if (self.won[x] == self.won[y] == self.won[z]) and (
+                    self.won[z] != 0):
                 return []
 
-        if self.previousMove != -1 and Winner(self.board[cell(self.previousMove)]) == 0:
+        if self.previousMove != -1 and self.won[cell(self.previousMove)] == 0:
             return [toMove(self.previousMove, i) for i in range(9) if self.board[cell(self.previousMove)][i] == 0]
         else:
             moves = []
             for i in range(9):
-                if Winner(self.board[i]) == 0:
+                if self.won[i] == 0:
                     moves.extend([toMove(i, j) for j in range(9) if self.board[i][j] == 0])
             return moves
 
@@ -77,8 +80,8 @@ class GameState:
         """ Get the game result from the viewpoint of playerjm.
         """
         for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
-            if Winner(self.board[x]) == Winner(self.board[y]) == Winner(self.board[z]):
-                if Winner(self.board[x]) == playerjm:
+            if self.won[x] == self.won[y] == self.won[z]:
+                if self.won[x] == playerjm:
                     return 1.0
                 else:
                     return 0.0
