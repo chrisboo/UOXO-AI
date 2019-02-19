@@ -15,10 +15,9 @@
 #
 # For more information about Monte Carlo Tree Search check out our web site at www.mcts.ai
 
-from math import *
-
 import random
 import timeit
+from math import *
 
 
 class Node:
@@ -53,7 +52,8 @@ class Node:
         return n
 
     def Update(self, result):
-        """ Update this node - one additional visit and result additional wins. result must be from the viewpoint of playerJustmoved.
+        """ Update this node - one additional visit and result additional wins.
+            Result must be from the viewpoint of playerJustmoved.
         """
         self.visits += 1
         self.wins += result
@@ -86,40 +86,47 @@ def UCT(rootstate, itermax, verbose=False):
         Return the best move from the rootstate.
         Assumes 2 alternating players (player 1 starts), with game results in the range [0.0, 1.0]."""
 
+    start = timeit.default_timer()
+
     rootnode = Node(state=rootstate)
 
-    start = timeit.default_timer()
     for i in range(itermax):
         node = rootnode
         state = rootstate.Clone()
-        # print(i)
+
         # Select
-        while node.untriedMoves == [] and node.childNodes != []:  # node is fully expanded and non-terminal
+        while node.untriedMoves == [] and node.childNodes != []:
+            # node is fully expanded and non-terminal
             node = node.UCTSelectChild()
             state.DoMove(node.move)
 
         # Expand
-        if node.untriedMoves != []:  # if we can expand (i.e. state/node is non-terminal)
+        if node.untriedMoves:
+            # node can be expanded (i.e. state/node is non-terminal)
             m = random.choice(node.untriedMoves)
             state.DoMove(m)
             node = node.AddChild(m, state)  # add child and descend tree
 
-        # Rollout - this can often be made orders of magnitude quicker using a state.GetRandomMove() function
-        while True:  # while state is non-terminal
+        # Rollout
+        while True:
+            # while state is non-terminal
             moves = state.GetMoves()
             if not moves:
                 break
             state.DoMove(random.choice(moves))
 
         # Backpropagate
-        while node != None:  # backpropagate from the expanded node and work back to the root node
+        while node is not None:
+            # backpropagate from the expanded node and work back to the root node
             node.Update(state.GetResult(
                 node.playerJustMoved))  # state is terminal. Update node with result from POV of node.playerJustMoved
             node = node.parentNode
+
     stop = timeit.default_timer()
-    print('Time: ', stop - start)
+    print('Time spent thinking: ', stop - start)
+
     # Output some information about the tree - can be omitted
-    # if (verbose): print(rootnode.TreeToString(0))
-    # else: print(rootnode.ChildrenToString())
+    if verbose:
+        print(rootnode.ChildrenToString())
 
     return sorted(rootnode.childNodes, key=lambda c: c.visits)[-1].move  # return the move that was most visited
