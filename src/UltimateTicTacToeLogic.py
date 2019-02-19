@@ -37,6 +37,7 @@ class GameState:
                       [0, 0, 0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 0, 0, 0]]
         self.won = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.winner = 0
 
     def Clone(self):
         """ Create a deep clone of this game state.
@@ -55,17 +56,22 @@ class GameState:
         self.board[board(move)][cell(move)] = self.playerJustMoved
         self.previousMove = cell(move)
 
+        maybe = False
         if Winner(self.board[board(move)]) == self.playerJustMoved:
             self.won[board(move)] = self.playerJustMoved
+            maybe = True
+
+        if maybe:
+            for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
+                if (self.won[x] == self.won[y] == self.won[z]) and (self.won[z] != 0):
+                    self.winner = self.won[z]
 
     def GetMoves(self):
         """ Get all possible moves from this state.
         """
         # No moves when someone wins
-        for (x, y, z) in [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]:
-            if (self.won[x] == self.won[y] == self.won[z]) and (
-                    self.won[z] != 0):
-                return []
+        if self.winner != 0:
+            return []
 
         if self.previousMove != -1 and self.won[cell(self.previousMove)] == 0:
             return [toMove(self.previousMove, i) for i in range(9) if self.board[cell(self.previousMove)][i] == 0]
