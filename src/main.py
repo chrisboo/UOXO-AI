@@ -54,6 +54,7 @@ class GameState:
                       [0,0,0,0,0,0,0,0,0],
                       [0,0,0,0,0,0,0,0,0],
                       [0,0,0,0,0,0,0,0,0]]
+        self.won = [0, 0, 0, 0, 0, 0, 0, 0, 0]
         
     def Clone(self):
         """ Create a deep clone of this game state.
