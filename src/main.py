@@ -21,6 +21,7 @@ def UCTPlayGame(itermax):
         print(np.matrix(state.GetMoves()), "\n")
 
         if currentPlayer == player:
+            m = None
             while m not in state.GetMoves():
                 try:
                     m = int(input("Your move: "))
@@ -33,7 +34,7 @@ def UCTPlayGame(itermax):
         state.DoMove(m)
     print(str(state))
 
-    if state.GetResult(state.playerJustMove) == 1.0:
+    if state.GetResult(state.playerJustMoved) == 1.0:
         print("Player " + str(state.playerJustMoved) + " wins!")
         return state.playerJustMoved
     elif state.GetResult(state.playerJustMoved) == 0.0:
